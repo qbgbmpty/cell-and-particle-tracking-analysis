@@ -11,7 +11,7 @@
 #define IMAGE_NUM 1
 #define IMAGE_ROW 1041 //1040+1
 #define IMAGE_COL 1393 //1392+1
-#define OMP_THREAD_NUM 1
+#define OMP_THREAD_NUM 32
 
 typedef struct _item{
 	int file_chosen;
@@ -101,6 +101,7 @@ int main(int argc, char* argv[])
 	printf("read time %.3lf secs\n",(double)(clock() - w)/CLOCKS_PER_SEC);
 	double start = omp_get_wtime( );
 	getSHORTESTDIS(virus_border, cell_border, vc);
+	
 	//__line
 	// t[1].stop(1,"compute time");
 	FILE *wfile;
@@ -126,6 +127,7 @@ int main(int argc, char* argv[])
 	freeRESULT(vc);
 	supCALCULATION(argv[6], argv[7], argv[8], atoi(argv[9]));
 	// system("pause");
+	
 	return 0;
 }
 
@@ -303,30 +305,33 @@ void getSHORTESTDIS(item* v, item* c, result* mindis){
 	#pragma omp parallel num_threads(threadid) private(image, test, vi, vj, cj, init_ci, fin_ci, vx, vy, cx, cy, dis)
 	{ 
 		image = omp_get_thread_num();
-		// printf("%d\n", image);
+		
 		// threadid = omp_get_num_threads();
 		// #pragma omp for 
-		for(test = 0; test < testimg; test+=threadid){
+		//for(test = 0; test < testimg; test+=threadid){
 			
 			// printf("image:%d test:%d\n", image, test);
 			// image = omp_get_thread_num();
-			if(image+test < testimg){
+			//if(image+test < testimg){
 			// else
-				init_ci = c->obj_index[image+test];
-				fin_ci = c->obj_num[image+test] + init_ci - 1;
+				init_ci = c->obj_index[0];
+				fin_ci = c->obj_num[0] + init_ci - 1;
 				// //__line
-				for(vi = v->obj_index[image+test]; vi < v->obj_index[image+test]+v->obj_num[image+test]; vi++){
+				for(vi = v->obj_index[0]; vi < v->obj_index[0]+v->obj_num[0]; vi+=threadid){
 					// //__line
-					if(mindis->overlap_mark[vi] == 0){
-						mindis->min_dis[vi] = 1000;
-						for(vj = v->point_index[vi]; vj < v->point_index[vi]+v->point_num[vi]; vj++){
+					if (vi+image<v->obj_num[0]){
+					if(mindis->overlap_mark[vi+image] == 0){
+						mindis->min_dis[vi+image] = 1000;
+						for(vj = v->point_index[vi+image]; vj < v->point_index[vi+image]+v->point_num[vi+image]; vj++){
 							// //__line
 							vx = v->x_coord[vj];
 							vy = v->y_coord[vj];
+							
 							//for(ci = c->obj_index[image]; ci < c->obj_index[image]+c->obj_num[image]; ci++){
 							// init_ci = c->obj_index[image];
 							// fin_ci = c->obj_num[image] + init_ci - 1;
 							// len_ci
+							
 								for(cj = c->point_index[init_ci]; cj < c->point_index[fin_ci]+c->point_num[fin_ci]; cj++){
 									// vx = v->x_coord[vj];
 									// vy = v->y_coord[vj];
@@ -336,17 +341,18 @@ void getSHORTESTDIS(item* v, item* c, result* mindis){
 									dis = sqrt((vx-cx)*(vx-cx)+(vy-cy)*(vy-cy));
 									// if(vj == v->point_index[vi] && cj == c->point_index[ci])
 										// mindis->min_dis[vi] = dis;
-									if(dis < mindis->min_dis[vi])
-										mindis->min_dis[vi] = dis; 
+									if(dis < mindis->min_dis[vi+image])
+										mindis->min_dis[vi+image] = dis; 
 								}
 							//}
 						}
 						//printf("%d, %d, %f\n", image, vi, mindis->min_dis[vi]);
 					}
+					}
 				}
-			}
+			//}
 		// #pragma omp barrier
-		}
+		//}
 	}
 	// exit(0);
 }
@@ -816,14 +822,14 @@ void supCALCULATION(char *root, char *CellFileListName, char *VirusFileListName,
 			// t[0].stop(1,"readfile");
 			//__line
 			// t[1].start();
+			
 			printf("read time %.3lf secs\n",(double)(clock() - w)/CLOCKS_PER_SEC);
 			double start = omp_get_wtime( );
-			//getSHORTESTDIS(sup_virus_border, sup_cell_border, sup_vc);
 			sup_getSHORTESTDIS(sup_virus_border, sup_cell_border, sup_vc, i+1, currentNode);
 			//__line
 			// t[1].stop(1,"compute time");
+			
 			FILE *wfile;
-			// char divCellandVirusFileName[50], buf[20];
 			
 			char divCellandVirusFileName[200], buf[20];
 			strcpy(divCellandVirusFileName, root);
