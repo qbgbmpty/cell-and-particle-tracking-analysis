@@ -276,7 +276,7 @@ void findOVERLAP(item* v, item* c, result* overlap){
 		for(i = v->obj_index[image]; i < v->obj_index[image]+v->obj_num[image]; i++){
 			for(j = v->point_index[i]; j < v->point_index[i]+v->point_num[i]; j++){
 				if(cellMark[v->y_coord[j]][v->x_coord[j]] == 1){
-					overlap->overlap_mark[i] = 1; ///// ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!ERROR!
+					overlap->overlap_mark[i] = 1; 
 					break;
 				}
 			}
